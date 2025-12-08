@@ -1,0 +1,418 @@
+{
+  "send": {
+    "request": {
+      "basic": {
+        "description": "Базовый запрос на отправку сообщения",
+        "body": {
+          "recipient": "79001234567",
+          "message": "Напоминание о приеме завтра в 10:00 🐾",
+          "sender": "VetManager",
+          "clientId": "12345",
+          "idempotencyKey": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+        }
+      },
+      "scheduled": {
+        "description": "Запрос с отложенной отправкой",
+        "body": {
+          "recipient": "79001234567",
+          "message": "Напоминание о приеме",
+          "sender": "VetManager",
+          "clientId": "12345",
+          "scheduleTime": "2024-01-15T10:00:00Z"
+        }
+      }
+    },
+    "response": {
+      "success_single_channel": {
+        "description": "Успешная отправка через один канал",
+        "status": 201,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "queued",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "queued",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 1,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "success_multiple_channels": {
+        "description": "Успешная отправка через несколько каналов",
+        "status": 201,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "queued",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "queued",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 1,
+              "errorCode": null,
+              "errorMessage": null
+            },
+            {
+              "channel": "teletypeapp",
+              "status": "queued",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 2,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "partial_error": {
+        "description": "Частичная ошибка при отправке (один канал не отправился)",
+        "status": 201,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "partial",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "failed",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 1,
+              "errorCode": "CHANNEL_UNAVAILABLE",
+              "errorMessage": "Канал messagio временно недоступен"
+            },
+            {
+              "channel": "teletypeapp",
+              "status": "queued",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 2,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "error_invalid_recipient": {
+        "description": "Ошибка валидации - некорректный получатель",
+        "status": 400,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "INVALID_RECIPIENT",
+          "errorMessage": "Некорректный номер телефона. Номер телефона должен содержать минимум 10 цифр"
+        }
+      },
+      "error_missing_client_id": {
+        "description": "Ошибка валидации - отсутствует clientId",
+        "status": 400,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "MISSING_CLIENT_ID",
+          "errorMessage": "Поле clientId обязательно для заполнения"
+        }
+      },
+      "error_insufficient_balance": {
+        "description": "Недостаточно средств на балансе",
+        "status": 402,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "INSUFFICIENT_BALANCE",
+          "errorMessage": "Недостаточно средств на балансе для отправки сообщения"
+        }
+      },
+      "error_authentication": {
+        "description": "Ошибка аутентификации",
+        "status": 401,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "AUTHENTICATION_FAILED",
+          "errorMessage": "Неверный токен аутентификации"
+        }
+      },
+      "duplicate_idempotency_key": {
+        "description": "Дубликат ключа идемпотентности - возвращается существующий messageId",
+        "status": 201,
+        "body": {
+          "success": true,
+          "messageId": "msg_existing_123",
+          "deliveryStatus": "queued",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "queued",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 1,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "errorCode": null,
+          "errorMessage": null
+        }
+      }
+    }
+  },
+  "status": {
+    "request": {
+      "get": {
+        "description": "GET запрос на проверку статуса",
+        "method": "GET",
+        "url": "/v1/status?messageId=msg_123456789"
+      },
+      "post": {
+        "description": "POST запрос на проверку статуса",
+        "method": "POST",
+        "body": {
+          "messageId": "msg_123456789"
+        }
+      }
+    },
+    "response": {
+      "delivered_single": {
+        "description": "Сообщение доставлено через один канал",
+        "status": 200,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "delivered",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "delivered",
+              "statusCode": "DELIVERED",
+              "deliveredAt": "2024-01-15T10:05:23Z",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 1,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "summary": {
+            "totalChannels": 1,
+            "deliveredChannels": 1,
+            "failedChannels": 0,
+            "requiredDelivered": true,
+            "firstDeliveredAt": "2024-01-15T10:05:23Z",
+            "lastDeliveredAt": "2024-01-15T10:05:23Z"
+          },
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "cascade_delivery": {
+        "description": "Каскадная доставка: первый канал не доставлен, второй доставлен",
+        "status": 200,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "delivered",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "failed",
+              "statusCode": "NOT_DELIVERED",
+              "deliveredAt": null,
+              "isRequired": false,
+              "isCascade": true,
+              "order": 1,
+              "errorCode": "CHANNEL_ERROR",
+              "errorMessage": "Не удалось доставить через канал messagio"
+            },
+            {
+              "channel": "teletypeapp",
+              "status": "delivered",
+              "statusCode": "DELIVERED",
+              "deliveredAt": "2024-01-15T10:05:30Z",
+              "isRequired": false,
+              "isCascade": true,
+              "order": 2,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "summary": {
+            "totalChannels": 2,
+            "deliveredChannels": 1,
+            "failedChannels": 1,
+            "requiredDelivered": true,
+            "firstDeliveredAt": "2024-01-15T10:05:30Z",
+            "lastDeliveredAt": "2024-01-15T10:05:30Z"
+          },
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "partial_delivery": {
+        "description": "Частичная доставка: один канал доставлен, другой не доставлен",
+        "status": 200,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "partial",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "delivered",
+              "statusCode": "DELIVERED",
+              "deliveredAt": "2024-01-15T10:05:20Z",
+              "isRequired": false,
+              "errorCode": null,
+              "errorMessage": null
+            },
+            {
+              "channel": "teletypeapp",
+              "status": "failed",
+              "statusCode": "NOT_DELIVERED",
+              "deliveredAt": null,
+              "isRequired": false,
+              "errorCode": "CHANNEL_ERROR",
+              "errorMessage": "Не удалось доставить через канал teletypeapp"
+            }
+          ],
+          "summary": {
+            "totalChannels": 2,
+            "deliveredChannels": 1,
+            "failedChannels": 1,
+            "requiredDelivered": true,
+            "firstDeliveredAt": "2024-01-15T10:05:20Z",
+            "lastDeliveredAt": "2024-01-15T10:05:20Z"
+          },
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "all_failed": {
+        "description": "Все каналы не доставлены",
+        "status": 200,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "failed",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "failed",
+              "statusCode": "NOT_DELIVERED",
+              "deliveredAt": null,
+              "isRequired": false,
+              "errorCode": "CHANNEL_ERROR",
+              "errorMessage": "Не удалось доставить через канал messagio"
+            },
+            {
+              "channel": "teletypeapp",
+              "status": "failed",
+              "statusCode": "NOT_DELIVERED",
+              "deliveredAt": null,
+              "isRequired": false,
+              "errorCode": "CHANNEL_ERROR",
+              "errorMessage": "Не удалось доставить через канал teletypeapp"
+            }
+          ],
+          "summary": {
+            "totalChannels": 2,
+            "deliveredChannels": 0,
+            "failedChannels": 2,
+            "requiredDelivered": false
+          },
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "queued": {
+        "description": "Сообщение в очереди",
+        "status": 200,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "queued",
+          "channels": [
+            {
+              "channel": "messagio",
+              "status": "queued",
+              "isRequired": false,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "summary": {
+            "totalChannels": 1,
+            "deliveredChannels": 0,
+            "failedChannels": 0,
+            "requiredDelivered": true
+          },
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "sent": {
+        "description": "Сообщение отправлено, но еще не доставлено",
+        "status": 200,
+        "body": {
+          "success": true,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "sent",
+          "channels": [
+            {
+              "channel": "teletypeapp",
+              "status": "sent",
+              "statusCode": "SENT",
+              "deliveredAt": null,
+              "isRequired": false,
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ],
+          "summary": {
+            "totalChannels": 1,
+            "deliveredChannels": 0,
+            "failedChannels": 0,
+            "requiredDelivered": true
+          },
+          "errorCode": null,
+          "errorMessage": null
+        }
+      },
+      "not_found": {
+        "description": "Сообщение не найдено",
+        "status": 404,
+        "body": {
+          "success": false,
+          "messageId": "msg_123456789",
+          "deliveryStatus": "unknown",
+          "channels": [],
+          "errorCode": "MESSAGE_NOT_FOUND",
+          "errorMessage": "Сообщение с указанным ID не найдено. Проверьте правильность messageId или сообщение могло быть удалено"
+        }
+      }
+    }
+  }
+}
+

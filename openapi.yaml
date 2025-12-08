@@ -1,0 +1,553 @@
+openapi: 3.0.3
+info:
+  title: VetManager Messaging Service API
+  version: 1.0.0
+  description: |
+    Протокол взаимодействия между системой «Ветменеджер» и внешним сервисом рассылок через REST API.
+    
+    Протокол поддерживает отправку телефонных уведомлений через различные каналы доставки.
+    Каналы представляют собой произвольные строки (названия интеграторов, например: messagio, teletypeapp, sms_provider_1 и т.д.)
+    и не привязаны к конкретным социальным сетям или мессенджерам.
+    
+    Сервис рассылок автоматически выбирает оптимальный канал доставки на основе настроек приоритета каналов,
+    доступности получателя и содержимого сообщения.
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+  - url: https://api-staging.example.com/v1
+    description: Staging server
+
+tags:
+  - name: messages
+    description: Операции с сообщениями
+
+paths:
+  /send:
+    post:
+      tags:
+        - messages
+      summary: Отправка сообщения
+      description: |
+        Отправляет сообщение получателю. Сервис автоматически выбирает оптимальный канал доставки
+        на основе настроек приоритета каналов и доступности получателя.
+        
+        Сообщения могут содержать эмодзи и форматирование - сервис автоматически адаптирует их под выбранный канал.
+      operationId: sendMessage
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        description: Данные сообщения для отправки
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageRequest'
+            examples:
+              basic:
+                summary: Базовый пример
+                value:
+                  recipient: "79001234567"
+                  message: "Напоминание о приеме завтра в 10:00 🐾"
+                  sender: "VetManager"
+                  clientId: "12345"
+              scheduled:
+                summary: Отложенная отправка
+                value:
+                  recipient: "79001234567"
+                  message: "Напоминание о приеме"
+                  sender: "VetManager"
+                  clientId: "12345"
+                  scheduleTime: "2024-01-15T10:00:00Z"
+      responses:
+        '201':
+          description: Сообщение успешно создано и поставлено в очередь
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                singleChannel:
+                  summary: Один канал
+                  value:
+                    success: true
+                    messageId: "msg_123456789"
+                    deliveryStatus: "queued"
+                    channels:
+                      - channel: "messagio"
+                        status: "queued"
+                        isRequired: false
+                        isCascade: true
+                        order: 1
+                        errorCode: null
+                        errorMessage: null
+                    errorCode: null
+                    errorMessage: null
+                multipleChannels:
+                  summary: Несколько каналов
+                  value:
+                    success: true
+                    messageId: "msg_123456789"
+                    deliveryStatus: "queued"
+                    channels:
+                      - channel: "messagio"
+                        status: "queued"
+                        isRequired: false
+                        isCascade: true
+                        order: 1
+                        errorCode: null
+                        errorMessage: null
+                      - channel: "teletypeapp"
+                        status: "queued"
+                        isRequired: false
+                        isCascade: true
+                        order: 2
+                        errorCode: null
+                        errorMessage: null
+                    errorCode: null
+                    errorMessage: null
+        '400':
+          description: Ошибка валидации запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRecipient:
+                  summary: Некорректный получатель
+                  value:
+                    success: false
+                    messageId: null
+                    deliveryStatus: "failed"
+                    channels: []
+                    errorCode: "INVALID_RECIPIENT"
+                    errorMessage: "Некорректный номер телефона. Номер телефона должен содержать минимум 10 цифр"
+                missingClientId:
+                  summary: Отсутствует clientId
+                  value:
+                    success: false
+                    messageId: null
+                    deliveryStatus: "failed"
+                    channels: []
+                    errorCode: "MISSING_CLIENT_ID"
+                    errorMessage: "Поле clientId обязательно для заполнения"
+                duplicateIdempotencyKey:
+                  summary: Дубликат ключа идемпотентности
+                  value:
+                    success: true
+                    messageId: "msg_existing_123"
+                    deliveryStatus: "queued"
+                    channels: []
+                    errorCode: null
+                    errorMessage: null
+        '401':
+          description: Ошибка аутентификации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                authenticationFailed:
+                  summary: Неверный токен
+                  value:
+                    success: false
+                    messageId: null
+                    deliveryStatus: "failed"
+                    channels: []
+                    errorCode: "AUTHENTICATION_FAILED"
+                    errorMessage: "Неверный токен аутентификации"
+        '402':
+          description: Недостаточно средств на балансе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                insufficientBalance:
+                  summary: Недостаточно средств
+                  value:
+                    success: false
+                    messageId: null
+                    deliveryStatus: "failed"
+                    channels: []
+                    errorCode: "INSUFFICIENT_BALANCE"
+                    errorMessage: "Недостаточно средств на балансе для отправки сообщения"
+        '429':
+          description: Превышен лимит запросов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimitExceeded:
+                  summary: Превышен лимит
+                  value:
+                    success: false
+                    messageId: null
+                    deliveryStatus: "failed"
+                    channels: []
+                    errorCode: "RATE_LIMIT_EXCEEDED"
+                    errorMessage: "Превышен лимит запросов. Попробуйте позже"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  summary: Внутренняя ошибка
+                  value:
+                    success: false
+                    messageId: null
+                    deliveryStatus: "failed"
+                    channels: []
+                    errorCode: "INTERNAL_ERROR"
+                    errorMessage: "Внутренняя ошибка сервиса. Попробуйте позже"
+
+  /status:
+    get:
+      tags:
+        - messages
+      summary: Проверка статуса сообщения
+      description: Возвращает текущий статус доставки сообщения по всем каналам
+      operationId: getMessageStatus
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      parameters:
+        - name: messageId
+          in: query
+          required: true
+          description: Идентификатор сообщения
+          schema:
+            type: string
+            example: "msg_123456789"
+      responses:
+        '200':
+          description: Статус сообщения успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '404':
+          description: Сообщение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - messages
+      summary: Проверка статуса сообщения (POST)
+      description: Возвращает текущий статус доставки сообщения по всем каналам
+      operationId: getMessageStatusPost
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - messageId
+              properties:
+                messageId:
+                  type: string
+                  example: "msg_123456789"
+      responses:
+        '200':
+          description: Статус сообщения успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '404':
+          description: Сообщение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    MessageRequest:
+      type: object
+      required:
+        - recipient
+        - message
+        - clientId
+      properties:
+        recipient:
+          type: string
+          pattern: '^[0-9]{10,15}$'
+          description: Номер телефона получателя
+          example: "79001234567"
+        message:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: |
+            Текст сообщения. Может содержать эмодзи, форматирование, спецсимволы.
+            Сервис автоматически адаптирует под выбранный канал.
+          example: "Напоминание о приеме завтра в 10:00 🐾"
+        sender:
+          type: string
+          maxLength: 250
+          description: Имя/номер отправителя (если не указан, используется значение из конфигурации)
+          example: "VetManager"
+        clientId:
+          type: string
+          description: ID клиента из системы VetManager (обязательное поле)
+          example: "12345"
+        idempotencyKey:
+          type: string
+          description: |
+            Ключ идемпотентности для предотвращения дублирования сообщений.
+            Формат: хеш (MD5/SHA256). Должен быть уникален в рамках одного clientId.
+            Если сервис получает запрос с уже существующим ключом для того же clientId,
+            он должен вернуть ответ с тем же messageId без повторной отправки.
+          example: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+        scheduleTime:
+          type: string
+          format: date-time
+          description: |
+            Время отложенной отправки в формате UTC (ISO 8601 с суффиксом Z).
+            Не может быть в прошлом.
+          example: "2024-01-15T10:00:00Z"
+
+    MessageResponse:
+      type: object
+      required:
+        - success
+        - messageId
+        - deliveryStatus
+        - channels
+        - errorCode
+        - errorMessage
+      properties:
+        success:
+          type: boolean
+          description: Флаг успешности операции
+        messageId:
+          type: string
+          nullable: true
+          description: Уникальный идентификатор сообщения в системе сервиса
+        deliveryStatus:
+          type: string
+          enum: [queued, sent, delivered, partial, failed]
+          description: Статус доставки
+        channels:
+          type: array
+          description: Массив каналов, через которые отправляется сообщение
+          items:
+            $ref: '#/components/schemas/Channel'
+        errorCode:
+          type: string
+          nullable: true
+          description: Код ошибки на уровне всего сообщения
+        errorMessage:
+          type: string
+          nullable: true
+          description: Текстовое описание ошибки на уровне всего сообщения
+
+    StatusResponse:
+      type: object
+      required:
+        - success
+        - messageId
+        - deliveryStatus
+        - channels
+        - summary
+        - errorCode
+        - errorMessage
+      properties:
+        success:
+          type: boolean
+          description: Флаг успешности операции
+        messageId:
+          type: string
+          description: Идентификатор сообщения
+        deliveryStatus:
+          type: string
+          enum: [queued, sent, delivered, partial, failed]
+          description: Общий статус доставки
+        channels:
+          type: array
+          description: Массив статусов по каждому каналу
+          items:
+            $ref: '#/components/schemas/ChannelStatus'
+        summary:
+          $ref: '#/components/schemas/DeliverySummary'
+        errorCode:
+          type: string
+          nullable: true
+          description: Код ошибки на уровне всего сообщения
+        errorMessage:
+          type: string
+          nullable: true
+          description: Текстовое описание ошибки на уровне всего сообщения
+
+    Channel:
+      type: object
+      required:
+        - channel
+        - status
+        - isRequired
+        - isCascade
+        - order
+        - errorCode
+        - errorMessage
+      properties:
+        channel:
+          type: string
+          description: |
+            Название канала (произвольная строка, например: messagio, teletypeapp, sms_provider_1).
+            Не привязано к конкретным соц.сетям или мессенджерам.
+          example: "messagio"
+        status:
+          type: string
+          enum: [queued, sent, delivered, failed, rejected, expired, cancelled]
+          description: Статус отправки через этот канал
+        isRequired:
+          type: boolean
+          description: Обязательный ли канал (всегда отправляется)
+        isCascade:
+          type: boolean
+          description: Участвует ли канал в каскаде (отправляется только если предыдущие не сработали)
+        order:
+          type: integer
+          nullable: true
+          description: Порядок в каскаде (1, 2, 3...) или null если не каскадный
+        errorCode:
+          type: string
+          nullable: true
+          description: Код ошибки для конкретного канала
+        errorMessage:
+          type: string
+          nullable: true
+          description: Текстовое описание ошибки для конкретного канала
+
+    ChannelStatus:
+      allOf:
+        - $ref: '#/components/schemas/Channel'
+        - type: object
+          properties:
+            statusCode:
+              type: string
+              nullable: true
+              enum: [DELIVERED, SENT, QUEUED, NOT_DELIVERED, REJECTED, EXPIRED, CANCELLED, BOUNCED, BLOCKED, UNKNOWN]
+              description: |
+                Детальный код статуса:
+                - DELIVERED - Доставлено успешно
+                - SENT - Отправлено оператору
+                - QUEUED - В очереди
+                - NOT_DELIVERED - Не доставлено
+                - REJECTED - Отклонено оператором/каналом
+                - EXPIRED - Срок доставки истек
+                - CANCELLED - Отменено
+                - BOUNCED - Отклонено получателем (неверный номер)
+                - BLOCKED - Заблокировано (номер в черном списке)
+                - UNKNOWN - Статус неизвестен
+              example: "DELIVERED"
+            deliveredAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: Время доставки в формате UTC (ISO 8601 с суффиксом Z), если доставлено
+              example: "2024-01-15T10:05:23Z"
+
+    DeliverySummary:
+      type: object
+      required:
+        - totalChannels
+        - deliveredChannels
+        - failedChannels
+        - requiredDelivered
+      properties:
+        totalChannels:
+          type: integer
+          description: Общее количество каналов
+        deliveredChannels:
+          type: integer
+          description: Количество доставленных каналов
+        failedChannels:
+          type: integer
+          description: Количество каналов с ошибкой
+        requiredDelivered:
+          type: boolean
+          description: Доставлены ли все обязательные каналы
+        firstDeliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Время первой доставки в формате UTC (ISO 8601 с суффиксом Z)
+        lastDeliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Время последней доставки в формате UTC (ISO 8601 с суффиксом Z)
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - messageId
+        - deliveryStatus
+        - channels
+        - errorCode
+        - errorMessage
+      properties:
+        success:
+          type: boolean
+          example: false
+        messageId:
+          type: string
+          nullable: true
+        deliveryStatus:
+          type: string
+          enum: [failed, unknown]
+        channels:
+          type: array
+          items:
+            type: object
+          description: Пустой массив при ошибке
+        errorCode:
+          type: string
+          description: Код ошибки
+          enum: [INVALID_RECIPIENT, INVALID_SENDER, MESSAGE_TOO_LONG, MISSING_CLIENT_ID, INVALID_SCHEDULE_TIME, DUPLICATE_IDEMPOTENCY_KEY, AUTHENTICATION_FAILED, MISSING_AUTHENTICATION, INSUFFICIENT_BALANCE, RATE_LIMIT_EXCEEDED, SERVICE_UNAVAILABLE, INTERNAL_ERROR, MESSAGE_NOT_FOUND]
+          example: "INVALID_RECIPIENT"
+        errorMessage:
+          type: string
+          description: Текстовое описание ошибки
+          example: "Некорректный номер телефона. Номер телефона должен содержать минимум 10 цифр"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer Token аутентификация
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API Key аутентификация через заголовок
+
