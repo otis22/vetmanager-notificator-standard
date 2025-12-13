@@ -447,6 +447,102 @@
         }
       }
     }
+  },
+  "status_batch": {
+    "request": {
+      "basic": {
+        "description": "Batch запрос на проверку статусов нескольких сообщений",
+        "method": "POST",
+        "body": {
+          "messageIds": [
+            "msg_123456789",
+            "msg_987654321",
+            "msg_111222333"
+          ]
+        }
+      }
+    },
+    "response": {
+      "success": {
+        "description": "Успешная проверка статусов нескольких сообщений",
+        "status": 200,
+        "body": {
+          "success": true,
+          "results": [
+            {
+              "success": true,
+              "messageId": "msg_123456789",
+              "deliveryStatus": "delivered",
+              "channels": [
+                {
+                  "channel": "messagio",
+                  "status": "delivered",
+                  "statusCode": "DELIVERED",
+                  "deliveredAt": "2024-01-15T10:05:23Z",
+                  "isRequired": false,
+                  "isCascade": true,
+                  "order": 1,
+                  "errorCode": null,
+                  "errorMessage": null
+                }
+              ],
+              "summary": {
+                "totalChannels": 1,
+                "deliveredChannels": 1,
+                "failedChannels": 0,
+                "requiredDelivered": true,
+                "firstDeliveredAt": "2024-01-15T10:05:23Z",
+                "lastDeliveredAt": "2024-01-15T10:05:23Z"
+              },
+              "errorCode": null,
+              "errorMessage": null
+            },
+            {
+              "success": false,
+              "messageId": "msg_987654321",
+              "deliveryStatus": "unknown",
+              "channels": [],
+              "errorCode": "MESSAGE_NOT_FOUND",
+              "errorMessage": "Сообщение с указанным ID не найдено"
+            },
+            {
+              "success": true,
+              "messageId": "msg_111222333",
+              "deliveryStatus": "queued",
+              "channels": [
+                {
+                  "channel": "teletypeapp",
+                  "status": "queued",
+                  "isRequired": false,
+                  "isCascade": true,
+                  "order": 1,
+                  "errorCode": null,
+                  "errorMessage": null
+                }
+              ],
+              "summary": {
+                "totalChannels": 1,
+                "deliveredChannels": 0,
+                "failedChannels": 0,
+                "requiredDelivered": true
+              },
+              "errorCode": null,
+              "errorMessage": null
+            }
+          ]
+        }
+      },
+      "error_invalid_request": {
+        "description": "Ошибка валидации - некорректный запрос",
+        "status": 400,
+        "body": {
+          "success": false,
+          "results": [],
+          "errorCode": "INVALID_REQUEST",
+          "errorMessage": "Массив messageIds пуст или содержит более 100 элементов"
+        }
+      }
+    }
   }
 }
 

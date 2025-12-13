@@ -3,6 +3,13 @@ info:
   title: VetManager Messaging Service API
   version: 1.0.0
   description: |
+    Версия API: v1
+    
+    Все endpoints доступны по путям с версией в URL:
+    - /v1/send - отправка сообщения
+    - /v1/status - проверка статуса сообщения
+    - /v1/status/batch - batch-проверка статусов
+    
     Протокол взаимодействия между системой «Ветменеджер» и внешним сервисом рассылок через REST API.
     
     Протокол поддерживает отправку телефонных уведомлений через различные каналы доставки.
@@ -11,15 +18,17 @@ info:
     
     Сервис рассылок автоматически выбирает оптимальный канал доставки на основе настроек приоритета каналов,
     доступности получателя и содержимого сообщения.
+    
+    **Важно:** Все запросы должны выполняться через HTTPS. Использование HTTP запрещено.
   contact:
     name: API Support
     email: support@example.com
 
 servers:
   - url: https://api.example.com/v1
-    description: Production server
+    description: Production server (версия 1)
   - url: https://api-staging.example.com/v1
-    description: Staging server
+    description: Staging server (версия 1)
 
 tags:
   - name: messages
@@ -38,7 +47,6 @@ paths:
         Сообщения могут содержать эмодзи и форматирование - сервис автоматически адаптирует их под выбранный канал.
       operationId: sendMessage
       security:
-        - bearerAuth: []
         - apiKeyAuth: []
       requestBody:
         required: true
@@ -206,10 +214,11 @@ paths:
       tags:
         - messages
       summary: Проверка статуса сообщения
-      description: Возвращает текущий статус доставки сообщения по всем каналам
+      description: |
+        Возвращает текущий статус доставки сообщения по всем каналам на момент выполнения запроса.
+        Это не механизм polling - каждый запрос возвращает актуальное состояние на момент запроса.
       operationId: getMessageStatus
       security:
-        - bearerAuth: []
         - apiKeyAuth: []
       parameters:
         - name: messageId
@@ -242,10 +251,11 @@ paths:
       tags:
         - messages
       summary: Проверка статуса сообщения (POST)
-      description: Возвращает текущий статус доставки сообщения по всем каналам
+      description: |
+        Возвращает текущий статус доставки сообщения по всем каналам на момент выполнения запроса.
+        Это не механизм polling - каждый запрос возвращает актуальное состояние на момент запроса.
       operationId: getMessageStatusPost
       security:
-        - bearerAuth: []
         - apiKeyAuth: []
       requestBody:
         required: true
@@ -268,6 +278,48 @@ paths:
                 $ref: '#/components/schemas/StatusResponse'
         '404':
           description: Сообщение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /status/batch:
+    post:
+      tags:
+        - messages
+      summary: Batch-проверка статусов сообщений
+      description: |
+        Возвращает текущие статусы доставки для нескольких сообщений одним запросом.
+        Каждый запрос возвращает актуальное состояние на момент запроса.
+      operationId: getBatchMessageStatus
+      security:
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchStatusRequest'
+            example:
+              messageIds:
+                - "msg_123456789"
+                - "msg_987654321"
+                - "msg_111222333"
+      responses:
+        '200':
+          description: Статусы сообщений успешно получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchStatusResponse'
+        '400':
+          description: Ошибка валидации запроса
           content:
             application/json:
               schema:
@@ -525,14 +577,50 @@ components:
           description: Текстовое описание ошибки
           example: "Некорректный номер телефона. Номер телефона должен содержать минимум 10 цифр"
 
+    BatchStatusRequest:
+      type: object
+      required:
+        - messageIds
+      properties:
+        messageIds:
+          type: array
+          minItems: 1
+          maxItems: 100
+          description: Массив идентификаторов сообщений для проверки статуса
+          items:
+            type: string
+          example: ["msg_123456789", "msg_987654321", "msg_111222333"]
+
+    BatchStatusResponse:
+      type: object
+      required:
+        - success
+        - results
+      properties:
+        success:
+          type: boolean
+          description: Флаг успешности операции
+          example: true
+        results:
+          type: array
+          description: Массив результатов проверки статуса для каждого messageId
+          items:
+            allOf:
+              - $ref: '#/components/schemas/StatusResponse'
+              - type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Флаг успешности проверки конкретного сообщения
+
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      description: Bearer Token аутентификация
     apiKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
-      description: API Key аутентификация через заголовок
+      description: |
+        API Key аутентификация через заголовок.
+        Требуются два заголовка:
+        - X-API-Key: секретный токен (API ключ) для аутентификации
+        - X-User-Id: уникальный идентификатор клиента в системе рассылок
 
