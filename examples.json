@@ -145,6 +145,42 @@
           "errorMessage": "Неверный токен аутентификации"
         }
       },
+      "error_rate_limit": {
+        "description": "Превышен лимит запросов",
+        "status": 429,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "RATE_LIMIT_EXCEEDED",
+          "errorMessage": "Превышен лимит запросов. Попробуйте позже"
+        }
+      },
+      "error_service_unavailable": {
+        "description": "Сервис временно недоступен",
+        "status": 500,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "SERVICE_UNAVAILABLE",
+          "errorMessage": "Сервис временно недоступен. Попробуйте позже"
+        }
+      },
+      "error_internal": {
+        "description": "Внутренняя ошибка сервиса",
+        "status": 500,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "INTERNAL_ERROR",
+          "errorMessage": "Внутренняя ошибка сервиса. Попробуйте позже"
+        }
+      },
       "duplicate_idempotency_key": {
         "description": "Дубликат ключа идемпотентности - возвращается существующий messageId",
         "status": 201,
@@ -274,6 +310,8 @@
               "statusCode": "DELIVERED",
               "deliveredAt": "2024-01-15T10:05:20Z",
               "isRequired": false,
+              "isCascade": false,
+              "order": null,
               "errorCode": null,
               "errorMessage": null
             },
@@ -283,6 +321,8 @@
               "statusCode": "NOT_DELIVERED",
               "deliveredAt": null,
               "isRequired": false,
+              "isCascade": false,
+              "order": null,
               "errorCode": "CHANNEL_ERROR",
               "errorMessage": "Не удалось доставить через канал teletypeapp"
             }
@@ -348,6 +388,8 @@
               "channel": "messagio",
               "status": "queued",
               "isRequired": false,
+              "isCascade": true,
+              "order": 1,
               "errorCode": null,
               "errorMessage": null
             }
@@ -376,6 +418,8 @@
               "statusCode": "SENT",
               "deliveredAt": null,
               "isRequired": false,
+              "isCascade": true,
+              "order": 1,
               "errorCode": null,
               "errorMessage": null
             }

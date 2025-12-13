@@ -304,7 +304,7 @@ components:
         sender:
           type: string
           maxLength: 250
-          description: Имя/номер отправителя (если не указан, используется значение из конфигурации)
+          description: Имя/номер отправителя (если не указан, используется значение по умолчанию, настраиваемое в сервисе рассылок)
           example: "VetManager"
         clientId:
           type: string
