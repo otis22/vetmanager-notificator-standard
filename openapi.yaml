@@ -430,7 +430,7 @@ components:
           description: Идентификатор сообщения
         deliveryStatus:
           type: string
-          enum: [queued, sent, delivered, partial, failed]
+          enum: [queued, sent, delivered, partial, failed, unknown]
           description: Общий статус доставки
         channels:
           type: array
@@ -575,7 +575,7 @@ components:
         errorCode:
           type: string
           description: Код ошибки
-          enum: [INVALID_RECIPIENT, INVALID_SENDER, MESSAGE_TOO_LONG, MISSING_CLIENT_ID, DUPLICATE_IDEMPOTENCY_KEY, AUTHENTICATION_FAILED, MISSING_AUTHENTICATION, INSUFFICIENT_BALANCE, RATE_LIMIT_EXCEEDED, SERVICE_UNAVAILABLE, INTERNAL_ERROR, MESSAGE_NOT_FOUND]
+          enum: [INVALID_RECIPIENT, INVALID_SENDER, MESSAGE_TOO_LONG, MISSING_CLIENT_ID, DUPLICATE_IDEMPOTENCY_KEY, AUTHENTICATION_FAILED, MISSING_AUTHENTICATION, INSUFFICIENT_BALANCE, RATE_LIMIT_EXCEEDED, SERVICE_UNAVAILABLE, INTERNAL_ERROR, MESSAGE_NOT_FOUND, INVALID_REQUEST]
           example: "INVALID_RECIPIENT"
         errorMessage:
           type: string
@@ -624,8 +624,11 @@ components:
       in: header
       name: X-API-Key
       description: |
-        API Key аутентификация через заголовок.
-        Требуются два заголовка:
-        - X-API-Key: секретный токен (API ключ) для аутентификации
-        - X-User-Id: уникальный идентификатор клиента в системе рассылок
+        API Key аутентификация через заголовки.
+        
+        **ОБЯЗАТЕЛЬНО требуются оба заголовка:**
+        - **X-API-Key** (обязательный): секретный токен (API ключ) для аутентификации
+        - **X-User-Id** (обязательный): уникальный идентификатор клиента в системе рассылок
+        
+        Все запросы должны содержать оба заголовка. Отсутствие любого из них приведет к ошибке аутентификации (401 Unauthorized).
 

@@ -67,21 +67,21 @@
         }
       },
       "partial_error": {
-        "description": "Частичная ошибка при отправке (один канал не отправился)",
+        "description": "Частичная ошибка при отправке (один канал не отправился, но сообщение принято в обработку)",
         "status": 201,
         "body": {
           "success": true,
           "messageId": "msg_123456789",
-          "deliveryStatus": "partial",
+          "deliveryStatus": "queued",
           "channels": [
             {
               "channel": "messagio",
-              "status": "failed",
+              "status": "queued",
               "isRequired": false,
               "isCascade": true,
               "order": 1,
-              "errorCode": "CHANNEL_UNAVAILABLE",
-              "errorMessage": "Канал messagio временно недоступен"
+              "errorCode": null,
+              "errorMessage": null
             },
             {
               "channel": "teletypeapp",
@@ -353,6 +353,8 @@
               "statusCode": "NOT_DELIVERED",
               "deliveredAt": null,
               "isRequired": false,
+              "isCascade": true,
+              "order": 1,
               "errorCode": "CHANNEL_ERROR",
               "errorMessage": "Не удалось доставить через канал messagio"
             },
@@ -362,6 +364,8 @@
               "statusCode": "NOT_DELIVERED",
               "deliveredAt": null,
               "isRequired": false,
+              "isCascade": true,
+              "order": 2,
               "errorCode": "CHANNEL_ERROR",
               "errorMessage": "Не удалось доставить через канал teletypeapp"
             }
