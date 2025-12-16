@@ -119,7 +119,8 @@ X-User-Id: {userId}
   "message": "Напоминание о приеме завтра в 10:00 🐾",
   "sender": "VetManager",
   "clientId": "12345",
-  "clinicId": "67890"
+  "clinicId": "67890",
+  "idempotencyKey": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
 }
 ```
 
@@ -791,7 +792,8 @@ curl -X POST https://api.example.com/v1/send \
     "message": "Напоминание о приеме завтра в 10:00",
     "sender": "VetManager",
     "clientId": "12345",
-    "clinicId": "67890"
+    "clinicId": "67890",
+    "idempotencyKey": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
   }'
 ```
 
