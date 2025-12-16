@@ -294,21 +294,12 @@ X-User-Id: {userId}
 ### 5.1. Endpoint
 
 **URL:** `{urlStatus}`  
-**Method:** `GET` или `POST`  
-**Content-Type:** `application/json` (для POST)
+**Method:** `GET`
 
 ### 5.2. Запрос
 
-**GET:**
 ```
 GET {urlStatus}?messageId=msg_123456789
-```
-
-**POST:**
-```json
-{
-  "messageId": "msg_123456789"
-}
 ```
 
 ### 5.3. Успешный ответ

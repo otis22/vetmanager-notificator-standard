@@ -224,13 +224,6 @@
         "description": "GET запрос на проверку статуса",
         "method": "GET",
         "url": "/v1/status?messageId=msg_123456789"
-      },
-      "post": {
-        "description": "POST запрос на проверку статуса",
-        "method": "POST",
-        "body": {
-          "messageId": "msg_123456789"
-        }
       }
     },
     "response": {
