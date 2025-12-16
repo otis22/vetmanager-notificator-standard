@@ -63,6 +63,7 @@
 | `userToken` | String | Секретный токен для аутентификации (может быть API ключ, пароль, JWT и т.д.) |
 | `urlSend` | URL | Endpoint API сервиса рассылок для отправки сообщений (должен содержать версию, например: `https://api.example.com/v1/send`) |
 | `urlStatus` | URL | Endpoint API сервиса рассылок для запроса статуса сообщения (должен содержать версию, например: `https://api.example.com/v1/status`) |
+| `urlStatusBatch` | URL | Endpoint API сервиса рассылок для batch-проверки статусов сообщений (должен содержать версию, например: `https://api.example.com/v1/status/batch`) |
 
 ## 3. Аутентификация
 
@@ -422,7 +423,7 @@ GET {urlStatus}?messageId=msg_123456789
 
 #### 5.4.1. Endpoint
 
-**URL:** `{urlStatus}/batch`  
+**URL:** `{urlStatusBatch}`  
 **Method:** `POST`  
 **Content-Type:** `application/json`
 
