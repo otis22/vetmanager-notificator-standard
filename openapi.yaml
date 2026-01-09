@@ -60,6 +60,7 @@ paths:
                 summary: Базовый пример
                 value:
                   recipient: "79001234567"
+                    email: "user@example.com"
                   message: "Напоминание о приеме завтра в 10:00 🐾"
                   sender: "VetManager"
                   clientId: "12345"
@@ -407,6 +408,12 @@ components:
           pattern: '^[0-9]{10,15}$'
           description: Номер телефона получателя
           example: "79001234567"
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: Email получателя. Поле опционально, может отсутствовать или быть null. При наличии должен быть валидным email-адресом
+          example: "user@example.com"
         message:
           type: string
           minLength: 1
