@@ -194,6 +194,18 @@
           "errorMessage": "Внутренняя ошибка сервиса. Попробуйте позже"
         }
       },
+      "error_service_not_configured": {
+        "description": "Сервис не настроен. Требуется завершить регистрацию и настройку",
+        "status": 500,
+        "body": {
+          "success": false,
+          "messageId": null,
+          "deliveryStatus": "failed",
+          "channels": [],
+          "errorCode": "SERVICE_NOT_CONFIGURED",
+          "errorMessage": "Сервис не настроен. Для отправки сообщений необходимо завершить регистрацию и настройку сервиса в личном кабинете."
+        }
+      },
       "duplicate_idempotency_key": {
         "description": "Дубликат ключа идемпотентности - возвращается существующий messageId",
         "status": 201,

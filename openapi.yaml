@@ -193,7 +193,7 @@ paths:
                     errorCode: "RATE_LIMIT_EXCEEDED"
                     errorMessage: "Превышен лимит запросов. Попробуйте позже"
         '500':
-          description: Внутренняя ошибка сервера
+          description: Внутренняя ошибка сервера или сервис не настроен
           content:
             application/json:
               schema:
@@ -208,6 +208,15 @@ paths:
                     channels: []
                     errorCode: "INTERNAL_ERROR"
                     errorMessage: "Внутренняя ошибка сервиса. Попробуйте позже"
+                serviceNotConfigured:
+                  summary: Сервис не настроен
+                  value:
+                    success: false
+                    messageId: null
+                    deliveryStatus: "failed"
+                    channels: []
+                    errorCode: "SERVICE_NOT_CONFIGURED"
+                    errorMessage: "Сервис не настроен. Для отправки сообщений необходимо завершить регистрацию и настройку сервиса в личном кабинете."
 
   /status:
     get:
@@ -242,11 +251,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: Внутренняя ошибка сервера
+          description: Внутренняя ошибка сервера или сервис не настроен
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  summary: Внутренняя ошибка
+                  value:
+                    success: false
+                    messageId: "msg_123456789"
+                    deliveryStatus: "unknown"
+                    channels: []
+                    errorCode: "INTERNAL_ERROR"
+                    errorMessage: "Внутренняя ошибка сервиса. Попробуйте позже"
+                serviceNotConfigured:
+                  summary: Сервис не настроен
+                  value:
+                    success: false
+                    messageId: "msg_123456789"
+                    deliveryStatus: "unknown"
+                    channels: []
+                    errorCode: "SERVICE_NOT_CONFIGURED"
+                    errorMessage: "Сервис не настроен. Для проверки статуса завершите регистрацию и настройку сервиса в личном кабинете."
     post:
       tags:
         - messages
@@ -283,11 +311,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: Внутренняя ошибка сервера
+          description: Внутренняя ошибка сервера или сервис не настроен
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  summary: Внутренняя ошибка
+                  value:
+                    success: false
+                    messageId: "msg_123456789"
+                    deliveryStatus: "unknown"
+                    channels: []
+                    errorCode: "INTERNAL_ERROR"
+                    errorMessage: "Внутренняя ошибка сервиса. Попробуйте позже"
+                serviceNotConfigured:
+                  summary: Сервис не настроен
+                  value:
+                    success: false
+                    messageId: "msg_123456789"
+                    deliveryStatus: "unknown"
+                    channels: []
+                    errorCode: "SERVICE_NOT_CONFIGURED"
+                    errorMessage: "Сервис не настроен. Для проверки статуса завершите регистрацию и настройку сервиса в личном кабинете."
 
   /status/batch:
     post:
@@ -325,11 +372,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: Внутренняя ошибка сервера
+          description: Внутренняя ошибка сервера или сервис не настроен
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  summary: Внутренняя ошибка
+                  value:
+                    success: false
+                    results: []
+                    errorCode: "INTERNAL_ERROR"
+                    errorMessage: "Внутренняя ошибка сервиса. Попробуйте позже"
+                serviceNotConfigured:
+                  summary: Сервис не настроен
+                  value:
+                    success: false
+                    results: []
+                    errorCode: "SERVICE_NOT_CONFIGURED"
+                    errorMessage: "Сервис не настроен. Для проверки статусов завершите регистрацию и настройку сервиса в личном кабинете."
 
 components:
   schemas:
@@ -575,7 +637,7 @@ components:
         errorCode:
           type: string
           description: Код ошибки
-          enum: [INVALID_RECIPIENT, INVALID_SENDER, MESSAGE_TOO_LONG, MISSING_CLIENT_ID, DUPLICATE_IDEMPOTENCY_KEY, AUTHENTICATION_FAILED, MISSING_AUTHENTICATION, INSUFFICIENT_BALANCE, RATE_LIMIT_EXCEEDED, SERVICE_UNAVAILABLE, INTERNAL_ERROR, MESSAGE_NOT_FOUND, INVALID_REQUEST]
+          enum: [INVALID_RECIPIENT, INVALID_SENDER, MESSAGE_TOO_LONG, MISSING_CLIENT_ID, DUPLICATE_IDEMPOTENCY_KEY, AUTHENTICATION_FAILED, MISSING_AUTHENTICATION, INSUFFICIENT_BALANCE, RATE_LIMIT_EXCEEDED, SERVICE_UNAVAILABLE, INTERNAL_ERROR, MESSAGE_NOT_FOUND, INVALID_REQUEST, SERVICE_NOT_CONFIGURED]
           example: "INVALID_RECIPIENT"
         errorMessage:
           type: string
