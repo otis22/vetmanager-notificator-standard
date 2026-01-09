@@ -60,10 +60,11 @@ paths:
                 summary: Базовый пример
                 value:
                   recipient: "79001234567"
-                    email: "user@example.com"
+                  email: "user@example.com"
                   message: "Напоминание о приеме завтра в 10:00 🐾"
                   sender: "VetManager"
                   clientId: "12345"
+                  clinicId: "67890"
       responses:
         '201':
           description: Сообщение успешно создано и поставлено в очередь
